@@ -1,0 +1,51 @@
+volumes:
+  marquez-data:
+    name: marquez-data
+
+services:
+  marquez-api:
+    image: docker.io/marquezproject/marquez:0.51.1
+    container_name: marquez-api
+    networks:
+      - breweries-net
+    environment:
+      MARQUEZ_PORT: 5000
+      MARQUEZ_ADMIN_PORT: 5001
+      MARQUEZ_CONFIG: /etc/marquez/marquez.yaml
+
+      POSTGRES_HOST: brewery-postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${BREWERIES_PASSWORD:?}
+      POSTGRES_DB: lineage
+    volumes:
+      - ./marquez.yaml:/etc/marquez/marquez.yaml:ro
+      - marquez-data:/opt/marquez
+
+    depends_on:
+      brewery-postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/healthcheck"]
+      interval: 120s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+    entrypoint: ["/usr/src/app/entrypoint.sh"]
+
+  marquez-web:
+    image: docker.io/marquezproject/marquez-web:0.51.1
+    container_name: marquez-web
+    networks:
+      - breweries-net
+    environment:
+      - MARQUEZ_HOST=marquez-api
+      - MARQUEZ_PORT=5000
+      - WEB_PORT=3000
+      - REACT_APP_ADVANCED_SEARCH=false
+    ports:
+      - 3000:3000
+    depends_on:
+      marquez-api:
+        condition: service_healthy

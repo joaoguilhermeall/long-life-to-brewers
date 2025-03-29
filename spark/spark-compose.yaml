@@ -1,0 +1,63 @@
+services:
+  rest-catalog:
+    image: localhost/apache/iceberg-rest-fixture:1.8.1
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    container_name: rest-catalog
+    networks:
+      - breweries-net
+    ports:
+      - 8181:8181
+    environment:
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=${BREWERIES_PASSWORD:?}
+      - AWS_REGION=us-east-1
+
+      - CATALOG_URI=jdbc:postgresql://brewery-postgres:5432/catalog
+      - CATALOG_JDBC_USER=postgres
+      - CATALOG_JDBC_PASSWORD=${BREWERIES_PASSWORD:?}
+
+      - CATALOG_WAREHOUSE=s3://${SPARK_WAREHOUSE_BUCKET:?}/
+      - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
+      - CATALOG_S3_ENDPOINT=http://minio:9000
+
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+      brewery-postgres:
+        condition: service_healthy
+
+  spark:
+    image: localhost/spark:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spark
+    hostname: spark
+    networks:
+      - breweries-net
+    ports:
+      - 7077:7077
+      - 8080:8080
+      - 8484:8484
+      - 8888:8888
+      - 10000:10000
+      - 10001:10001
+    environment:
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=${BREWERIES_PASSWORD:?}
+      - AWS_REGION=us-east-1
+
+    # Para evitar realização de build a cada alteração
+    volumes:
+      - ./entrypoint.sh:/opt/spark/bin/entrypoint.sh:ro
+      - ./spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+      rest-catalog:
+        condition: service_started
+      marquez-api:
+        condition: service_healthy

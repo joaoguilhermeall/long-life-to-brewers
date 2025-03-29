@@ -1,0 +1,6 @@
+include:
+  - common/common-compose.yaml # Common Services
+  - lineage/lineage-compose.yaml # Lineage Services
+  - airflow/airflow-compose.yaml # Airflow Services
+  - minio/minio-compose.yaml # Minio Services
+  - spark/spark-compose.yaml # Spark Services

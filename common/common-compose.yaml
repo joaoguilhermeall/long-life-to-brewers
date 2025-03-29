@@ -1,0 +1,50 @@
+networks:
+  breweries-net:
+    name: breweries-net
+    driver: bridge
+
+volumes:
+  postgres-data:
+    name: postgres-data
+
+services:
+  brewery-postgres:
+    image: localhost/postgres:13
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brewery-postgres
+    networks:
+      - breweries-net
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${BREWERIES_PASSWORD:?}
+      POSTGRES_DB: brewery
+      POSTGRES_DBS_LIST: ${POSTGRES_DBS_LIST:?}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+
+  brewery-redis:
+    # Redis is limited to 7.2-bookworm due to licencing change
+    # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
+    image: docker.io/redis:7.2-bookworm
+    container_name: brewery-redis
+    networks:
+      - breweries-net
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
+    restart: always
