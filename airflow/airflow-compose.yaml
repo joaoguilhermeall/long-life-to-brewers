@@ -96,6 +96,11 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:?}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:?}/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
+  deploy:
+    resources:
+      limits:
+        cpus: 1
+        memory: 500M
   depends_on:
     &airflow-common-depends-on
     brewery-redis:
@@ -183,6 +188,11 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         exec /entrypoint airflow version
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 200M
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env

@@ -23,6 +23,11 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 200M
 
   minio-init:
     # Usando a versão mais próxima da minio server
@@ -40,6 +45,11 @@ services:
       - ./minio-init.sh:/bin/minio-init.sh:ro
     entrypoint: ["/bin/bash"]
     command: ["/bin/minio-init.sh"]
+    deploy:
+      resources:
+        limits:
+          cpus: 0.1
+          memory: 100M
     depends_on:
       minio:
         condition: service_healthy

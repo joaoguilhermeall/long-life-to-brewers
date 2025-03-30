@@ -22,6 +22,12 @@ services:
       - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
       - CATALOG_S3_ENDPOINT=http://minio:9000
 
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 200M
+
     depends_on:
       minio-init:
         condition: service_completed_successfully
@@ -40,19 +46,23 @@ services:
     ports:
       - 7077:7077
       - 8080:8080
-      - 8484:8484
-      - 8888:8888
-      - 10000:10000
-      - 10001:10001
-    environment:
-      - AWS_ACCESS_KEY_ID=minio
-      - AWS_SECRET_ACCESS_KEY=${BREWERIES_PASSWORD:?}
-      - AWS_REGION=us-east-1
 
-    # Para evitar realização de build a cada alteração
     volumes:
       - ./entrypoint.sh:/opt/spark/bin/entrypoint.sh:ro
-      - ./spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:rw
+    environment:
+      - REST_CATALOG_ENDPOINT=http://rest-catalog:8181
+      - AWS_ENDPOINT=http://minio:9000
+      - AWS_ACCESS_KEY_ID=${SPARK_WAREHOUSE_BUCKET:?}
+      - AWS_SECRET_ACCESS_KEY=minio
+      - AWS_DEFAULT_BUCKET=${BREWERIES_PASSWORD:?}
+      - MARQUEZ_API_ENDPOINT=http://marquez-api:5000
+
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: 2G
 
     depends_on:
       minio-init:

@@ -18,12 +18,22 @@ export COMPOSE_BAKE=true
 
 # Secrets - Read only - Read from user
 if [ -z "$BREWERIES_PASSWORD" ]; then
-    echo "Please enter with BREWERIES_PASSWORD (Length 8: breweries): "
-    read -s BREWERIES_PASSWORD
+    # Read from .breweries_password file
+    if [[ -f "$SCRIPT_DIR/.breweries_password" && -s "$SCRIPT_DIR/.breweries_password" ]]; then
+        echo "Reading BREWERIES_PASSWORD from $SCRIPT_DIR/.breweries_password"
+        BREWERIES_PASSWORD=$(cat "$SCRIPT_DIR/.breweries_password")
+    else
+        # Prompt for password
+        echo "Please enter with BREWERIES_PASSWORD (Length 8: breweries): "
+        read -s BREWERIES_PASSWORD
 
-    if [ ${#BREWERIES_PASSWORD} -lt 8 ]; then
-        echo "A senha deve ter pelo menos 8 caracteres."
-        exit 1
+        if [ ${#BREWERIES_PASSWORD} -lt 8 ]; then
+            echo "A senha deve ter pelo menos 8 caracteres."
+            exit 1
+        fi
+
+        # Save password to .breweries_password file
+        echo "$BREWERIES_PASSWORD" > "$SCRIPT_DIR/.breweries_password"
     fi
 fi
 export BREWERIES_PASSWORD

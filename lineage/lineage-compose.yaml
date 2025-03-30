@@ -17,10 +17,18 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${BREWERIES_PASSWORD:?}
       POSTGRES_DB: lineage
+    ports:
+      - 5000:5000
+      - 5001:5001
     volumes:
       - ./marquez.yaml:/etc/marquez/marquez.yaml:ro
       - marquez-data:/opt/marquez
 
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 200M
     depends_on:
       brewery-postgres:
         condition: service_healthy
@@ -46,6 +54,11 @@ services:
       - REACT_APP_ADVANCED_SEARCH=false
     ports:
       - 3000:3000
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 200M
     depends_on:
       marquez-api:
         condition: service_healthy
