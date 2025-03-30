@@ -13,5 +13,7 @@ class BreweryNotifier(BaseNotifier):
         print(message)
 
     def notify(self, context: Context):
-        title = f"Task {context['task_instance'].task_id} failed"
+        title = (
+            f"Task {context['task_instance'].task_id} failed" if "task_instance" in context else "Task failed"
+        )
         self.brewery_notifier(f"{title}: {self.message}")

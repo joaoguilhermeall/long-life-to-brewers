@@ -13,15 +13,18 @@ authors = [
 requires-python = "==3.10.*"
 readme = "README.md"
 
-dependencies = ["httpx>=0.28.1"]
+dependencies = ["httpx>=0.28.1", "minio>=7.2.15"]
 
 [project.optional-dependencies]
 test = [
     "pytest>=8.3.5",
+    "pytest-mock>=3.14.0",
+    "pytest-asyncio>=0.26.0",
 ]
 dev = [
     "ruff>=0.11.2",
     "mypy>=1.15.0",
+    "ipykernel>=6.29.5",
 ]
 providers = [
     "apache-airflow==2.10.5",
@@ -32,7 +35,7 @@ providers = [
 distribution = true
 
 [project.scripts]
-brewery = "brewery.cli:main"
+brewery-cli = "brewery.cli:main"
 
 [tool.pdm.scripts]
 lint = "ruff check ."
@@ -45,7 +48,7 @@ excludes = ["notebook", "ipykernel"]
 
 [tool.ruff]
 src = ["src", "tests"]
-line-length = 100
+line-length = 99
 include = ["**/*.py", "**/*.pyi", "**/pyproject.toml"]
 
 [tool.ruff.lint]
@@ -57,6 +60,9 @@ select = [
     "I",  # isort
     "W",  # pycodestyle - Warning
     "UP", # pyupgrade
+]
+fixable = [
+    "F401", # Unused import
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -79,3 +85,6 @@ disallow_untyped_defs = true
 exclude = [
     "^(?!src).*"
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
