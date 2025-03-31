@@ -1,4 +1,4 @@
-from brewery import silver
+from brewery import gold, silver
 from brewery.bronze import BreweryBronze
 from brewery.common import BreweryConfig
 
@@ -21,6 +21,8 @@ class BreweryPipeline:
 
     def gold(self) -> None:
         """Gold stage of the pipeline."""
+        gold_instance = gold.BreweryGold(self._config)
+        gold_instance.run()
 
     async def run(self) -> None:
         """Run the pipeline."""

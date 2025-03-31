@@ -294,11 +294,11 @@ class BreweryBronze:
             _logger.info(f"Data files extracted: {data_files}")
 
             if self._config.bronze_overwrite:
-                self._storage_client.delete_dir(self._config.bronze_path)
+                self._storage_client.delete_dir(self._config.bronze_path / "breweries")
 
             # TODO: Improve this to use async
             for data_file in data_files:
-                target_path = self._config.bronze_path / data_file.name / "breweries"
+                target_path = self._config.bronze_path / "breweries" / data_file.name
                 _logger.info(f"Saving file {data_file} to storage at {target_path}")
                 self._storage_client.save_file(data_file, target_path)
                 _logger.info(f"File {data_file} saved to storage at {target_path}")

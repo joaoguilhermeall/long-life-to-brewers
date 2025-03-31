@@ -32,21 +32,29 @@ class BreweryConfig:
         self.log_file: str = _get_env("BREWERY_LOG_FILE", "brewery.log")
 
         # Minio
-        self.minio_endpoint: str = _get_env("BREWERY_MINIO_ENDPOINT")
-        self.minio_access_key: str = _get_env("BREWERY_MINIO_ACCESS_KEY")
+        self.minio_endpoint: str = _get_env("BREWERY_MINIO_ENDPOINT", "localhost:9000")
+        self.minio_access_key: str = _get_env("BREWERY_MINIO_ACCESS_KEY", "minio")
         self.minio_secret_key: str = _get_env("BREWERY_MINIO_SECRET_KEY")
-        self.minio_bucket_name: str = _get_env("BREWERY_MINIO_BUCKET_NAME")
+        self.minio_bucket_name: str = _get_env("BREWERY_MINIO_BUCKET_NAME", "breweries-data")
         self.minio_secure: bool = bool(int(_get_env("BREWERY_MINIO_SECURE", "0")))
+
+        os.environ["AWS_ACCESS_KEY_ID"] = self.minio_access_key
+        os.environ["AWS_SECRET_ACCESS_KEY"] = self.minio_secret_key
+        os.environ["AWS_REGION"] = "us-east-1"
 
         # Parallelism
         self.extract_num_parallel_tasks: int = int(_get_env("BREWERY_EXTRACT_NUM_PARALLEL_TASKS", "10"))
+
+        self.db_name: str = _get_env("BREWERY_DB_NAME", "brewery.db_all_brewery")
 
         # bronze
         self.bronze_path: Path = Path(_get_env("BREWERY_BRONZE_PATH", "bronze"))
         self.bronze_overwrite: bool = bool(int(_get_env("BREWERY_BRONZE_OVERWRITE", "1")))
 
         # silver
+        self.silver_table_name: str = _get_env("BREWERY_SILVER_TABLE_NAME", "silver_brewery")
         self.silver_path: Path = Path(_get_env("BREWERY_SILVER_PATH", "silver"))
 
         # gold
+        self.gold_table_name: str = _get_env("BREWERY_GOLD_TABLE_NAME", "gold_brewery")
         self.gold_path: Path = Path(_get_env("BREWERY_GOLD_PATH", "gold"))

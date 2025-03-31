@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import col, trim
 from pyspark.sql.types import StringType, StructField, StructType
 
-from brewery.common import BreweryConfig
+from brewery.common import BreweryConfig, get_version
 
 _logger = logging.getLogger(__name__)
 
@@ -48,13 +48,37 @@ class BrewerySilver:
 
         return df
 
+    def _write_data(self, spark: SparkSession, df_silver: DataFrame, output_path: str) -> None:
+        spark.sql(f"CREATE DATABASE IF NOT EXISTS {self._config.db_name}")
+        spark.sql(f"USE {self._config.db_name}")
+
+        if not spark.catalog.tableExists(self._config.silver_table_name):
+            _logger.info(f"Creating table {self._config.silver_table_name}")
+
+            (
+                spark.createDataFrame([], df_silver.schema)
+                .writeTo(self._config.silver_table_name)
+                .using("iceberg")
+                .tableProperty("format-version", "2")  # 2 is the default only for Iceberg >= 1.4.0
+                .tableProperty("brewery-pipeline.version", get_version())
+                .tableProperty("location", f"{output_path}/{self._config.silver_table_name}")
+                .create()
+            )
+            spark.sql(
+                f"ALTER TABLE {self._config.silver_table_name} WRITE DISTRIBUTED BY PARTITION LOCALLY "
+                "ORDERED BY country"
+            )
+
+        # Alguma coisa não tá funcionando com o Rest Catalog
+        df_silver.writeTo(self._config.silver_table_name).using("iceberg").overwritePartitions()
+
     def run(self):
         _logger.info("Starting Brewery Silver Transformation Job")
         _logger.info("Starting Spark Session")
         spark = SparkSession.builder.appName("Brewery Data Pipeline").getOrCreate()
 
         input_path = f"s3a://{self._config.minio_bucket_name}/{self._config.bronze_path}/breweries"
-        output_path = f"s3a://{self._config.minio_bucket_name}/{self._config.silver_path}/breweries"
+        output_path = f"s3a://{self._config.minio_bucket_name}/{self._config.silver_path}"
 
         _logger.info(f"Reading data from {input_path}")
         df_bronze = spark.read.format("json").schema(schema).load(input_path).cache()
@@ -62,19 +86,8 @@ class BrewerySilver:
         _logger.info("Transforming data")
         df_silver = self._apply_transformations(df_bronze)
 
-        _logger.info(f"Writing data to {output_path}")
-        df_silver.write.partitionBy("country").mode("overwrite").parquet(output_path)
-
-        # Alguma coisa não tá funcionando com o Rest Catalog
-        # (
-        #     df_silver.writeTo("brewery.default.brewery_silver")
-        #     .using("iceberg")
-        #     .tableProperty("format-version", "2")  # 2 is the default only for Iceberg >= 1.4.0
-        #     .tableProperty("brewery-pipeline.version", get_version())
-        #     .tableProperty("location", output_path)
-        #     .partitionedBy(bucket(4, "country"))
-        #     .createOrReplace()
-        # )
+        self._write_data(spark, df_silver, output_path)
+        _logger.info(f"Silver data written to table {self._config.silver_table_name} in {output_path}")
 
         spark.stop()
         _logger.info("Spark Session stopped")
