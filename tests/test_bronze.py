@@ -2,21 +2,14 @@ import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-from more_itertools import side_effect
 import pytest
 
 from brewery.bronze import BreweryBronze, RequestExecutor
-from brewery.common import BreweryConfig
 from brewery.exceptions import (
     OpenBreweryDBGetDataException,
     RequestExecutorError,
     StorageSaveFileError,
 )
-
-
-@pytest.fixture
-def mock_config():
-    return BreweryConfig()
 
 
 @pytest.fixture
@@ -73,7 +66,9 @@ async def test_open_brewery_client_get_total_breweries(mocker, mock_open_brewery
 
 
 async def test_open_brewery_client_get_total_breweries_error(mocker, mock_open_brewery_client):
-    mock_open_brewery_client.get_total_breweries = AsyncMock(side_effect=OpenBreweryDBGetDataException("error"))
+    mock_open_brewery_client.get_total_breweries = AsyncMock(
+        side_effect=OpenBreweryDBGetDataException("error")
+    )
 
     with pytest.raises(OpenBreweryDBGetDataException):
         await mock_open_brewery_client.get_total_breweries()

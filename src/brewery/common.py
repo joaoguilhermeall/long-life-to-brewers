@@ -1,3 +1,4 @@
+import importlib.metadata
 import os
 from pathlib import Path
 
@@ -11,10 +12,14 @@ def _get_env(key: str, default: str | None = None) -> str:
     if value is not None:
         return value.strip()
 
-    elif default is not None: # "" is accepted as a default value
+    elif default is not None:  # "" is accepted as a default value
         return default
 
     raise RequiredEnvironmentVariableError(key)
+
+
+def get_version():
+    return importlib.metadata.version("brewery")
 
 
 class BreweryConfig:
@@ -39,3 +44,9 @@ class BreweryConfig:
         # bronze
         self.bronze_path: Path = Path(_get_env("BREWERY_BRONZE_PATH", "bronze"))
         self.bronze_overwrite: bool = bool(int(_get_env("BREWERY_BRONZE_OVERWRITE", "1")))
+
+        # silver
+        self.silver_path: Path = Path(_get_env("BREWERY_SILVER_PATH", "silver"))
+
+        # gold
+        self.gold_path: Path = Path(_get_env("BREWERY_GOLD_PATH", "gold"))

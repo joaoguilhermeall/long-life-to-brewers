@@ -1,3 +1,4 @@
+from brewery import silver
 from brewery.bronze import BreweryBronze
 from brewery.common import BreweryConfig
 
@@ -15,7 +16,8 @@ class BreweryPipeline:
 
     def silver(self) -> None:
         """Silver stage of the pipeline."""
-        pass
+        silver_instance = silver.BrewerySilver(self._config)
+        silver_instance.run()
 
     def gold(self) -> None:
         """Gold stage of the pipeline."""

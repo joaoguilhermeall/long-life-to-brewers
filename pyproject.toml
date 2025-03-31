@@ -13,7 +13,7 @@ authors = [
 requires-python = "==3.10.*"
 readme = "README.md"
 
-dependencies = ["httpx>=0.28.1", "minio>=7.2.15"]
+dependencies = ["httpx>=0.28.1", "minio>=7.2.15", "pyspark==3.4.4"]
 
 [project.optional-dependencies]
 test = [
@@ -25,10 +25,6 @@ dev = [
     "ruff>=0.11.2",
     "mypy>=1.15.0",
     "ipykernel>=6.29.5",
-]
-providers = [
-    "apache-airflow==2.10.5",
-    "apache-airflow-providers-docker==4.2.1",
 ]
 
 [tool.pdm]

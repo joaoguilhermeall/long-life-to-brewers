@@ -298,7 +298,7 @@ class BreweryBronze:
 
             # TODO: Improve this to use async
             for data_file in data_files:
-                target_path = self._config.bronze_path / data_file.name
+                target_path = self._config.bronze_path / data_file.name / "breweries"
                 _logger.info(f"Saving file {data_file} to storage at {target_path}")
                 self._storage_client.save_file(data_file, target_path)
                 _logger.info(f"File {data_file} saved to storage at {target_path}")
