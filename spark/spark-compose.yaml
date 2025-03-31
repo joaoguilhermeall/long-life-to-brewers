@@ -22,11 +22,17 @@ services:
       - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
       - CATALOG_S3_ENDPOINT=http://minio:9000
 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8181/v1/config"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
           cpus: 0.5
-          memory: 200M
+          memory: 500M
 
     depends_on:
       minio-init:
@@ -35,7 +41,7 @@ services:
         condition: service_healthy
 
   spark:
-    image: localhost/spark:latest
+    image: localhost/brewery-spark:3.4.4
     build:
       context: .
       dockerfile: Dockerfile
@@ -44,30 +50,28 @@ services:
     networks:
       - breweries-net
     ports:
-      - 7077:7077
-      - 8080:8080
+      - 4000:4040
+      - 8888:8888
 
     volumes:
       - ./entrypoint.sh:/opt/spark/bin/entrypoint.sh:ro
       - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:rw
+      - ../notebooks:/opt/spark/notebooks:rw
     environment:
       - REST_CATALOG_ENDPOINT=http://rest-catalog:8181
       - AWS_ENDPOINT=http://minio:9000
-      - AWS_ACCESS_KEY_ID=${SPARK_WAREHOUSE_BUCKET:?}
-      - AWS_SECRET_ACCESS_KEY=minio
-      - AWS_DEFAULT_BUCKET=${BREWERIES_PASSWORD:?}
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=${BREWERIES_PASSWORD:?}
+      - AWS_DEFAULT_BUCKET=${SPARK_WAREHOUSE_BUCKET:?}
+      - AWS_REGION=us-east-1
       - MARQUEZ_API_ENDPOINT=http://marquez-api:5000
 
-    deploy:
-      resources:
-        limits:
-          cpus: 2
-          memory: 2G
-
     depends_on:
-      minio-init:
-        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
       rest-catalog:
-        condition: service_started
+        condition: service_healthy
       marquez-api:
         condition: service_healthy
+      marquez-web:
+        condition: service_started

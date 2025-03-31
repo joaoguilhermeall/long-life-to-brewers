@@ -48,8 +48,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.1
-          memory: 100M
+          cpus: 1
+          memory: 1G
     depends_on:
       minio:
         condition: service_healthy

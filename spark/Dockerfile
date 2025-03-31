@@ -46,12 +46,21 @@ ENV SPARK_HOME=/opt/spark
 ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip \
   PATH="${SPARK_HOME}/sbin:${SPARK_HOME}/bin:${PATH}"
 
+WORKDIR ${SPARK_HOME}
+RUN chmod u+x /opt/spark/sbin/* && chmod u+x /opt/spark/bin/*
+
+ARG NOTEBOOKS_DIR=/opt/spark/notebooks
+
+RUN mkdir -p ${NOTEBOOKS_DIR} && \
+  pip install --no-cache-dir notebook==7.3.3 && \
+  echo '#! /bin/sh' >> /bin/notebook && \
+  echo 'export PYSPARK_DRIVER_PYTHON=jupyter-notebook' >> /bin/notebook && \
+  echo "export PYSPARK_DRIVER_PYTHON_OPTS=\"--notebook-dir=${NOTEBOOKS_DIR} --ip='*' --NotebookApp.token='' --NotebookApp.password='' --port=8888 --no-browser --allow-root\"" >> /bin/notebook && \
+  echo "pyspark" >> /bin/notebook && \
+  chmod u+x /bin/notebook
 
 COPY ./conf/spark-defaults.conf /opt/spark/conf
 COPY entrypoint.sh /opt/spark/bin
 
-RUN chmod u+x /opt/spark/sbin/* && chmod u+x /opt/spark/bin/*
-
-WORKDIR ${SPARK_HOME}
-
 ENTRYPOINT ["/opt/spark/bin/entrypoint.sh"]
+CMD [ "notebook" ]

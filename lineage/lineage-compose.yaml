@@ -28,7 +28,7 @@ services:
       resources:
         limits:
           cpus: 0.5
-          memory: 200M
+          memory: 500M
     depends_on:
       brewery-postgres:
         condition: service_healthy
