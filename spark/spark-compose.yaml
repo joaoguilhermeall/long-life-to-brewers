@@ -41,7 +41,7 @@ services:
         condition: service_healthy
 
   spark:
-    image: localhost/brewery-spark:3.4.4
+    image: ${SPARK_BASE_IMAGE:?}
     build:
       context: .
       dockerfile: Dockerfile

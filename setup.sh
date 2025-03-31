@@ -38,16 +38,27 @@ if [ -z "$BREWERIES_PASSWORD" ]; then
 fi
 export BREWERIES_PASSWORD
 
+# Get version from pyproject.toml
+if [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
+    export BREWERIES_VERSION=$(grep -oP '(?<=^version = ")[^"]*' "$SCRIPT_DIR/pyproject.toml")
+else
+    echo "pyproject.toml not found. Please run this script from the project root directory."
+    exit 1
+fi
+export BREWERIES_VERSION
+
 # Airflow
 export AIRFLOW_VERSION="2.10.5"
 export AIRFLOW_PROJ_DIR="$SCRIPT_DIR"/airflow
 export AIRFLOW_UID=$(id -u)
 
 # Spark
+export SPARK_BASE_IMAGE="localhost/brewery/spark:3.4.4"
 export SPARK_WAREHOUSE_BUCKET="spark-warehouse"
 
 # Minio
-export MINIO_DEFAULT_BUCKETS="breweries-data,$SPARK_WAREHOUSE_BUCKET"
+export MINIO_BREWERIES_BUCKET="breweries-data"
+export MINIO_DEFAULT_BUCKETS="$MINIO_BREWERIES_BUCKET,$SPARK_WAREHOUSE_BUCKET"
 
 # Postgres
 export POSTGRES_DBS_LIST="airflow,lineage,catalog"

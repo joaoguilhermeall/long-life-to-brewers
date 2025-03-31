@@ -10,7 +10,7 @@ volumes:
 x-common-resources:
   &common-resources
   networks:
-    - breweries-net
+    breweries-net:
 
   deploy:
     resources:
@@ -26,8 +26,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: brewery-postgres
-    networks:
-      - breweries-net
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${BREWERIES_PASSWORD:?}
@@ -50,8 +48,6 @@ services:
     # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
     image: docker.io/redis:7.2-bookworm
     container_name: brewery-redis
-    networks:
-      - breweries-net
     expose:
       - 6379
     healthcheck:

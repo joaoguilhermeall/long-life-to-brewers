@@ -51,7 +51,7 @@ RUN chmod u+x /opt/spark/sbin/* && chmod u+x /opt/spark/bin/*
 
 ARG NOTEBOOKS_DIR=/opt/spark/notebooks
 
-RUN mkdir -p ${NOTEBOOKS_DIR} && \
+RUN mkdir -p ${NOTEBOOKS_DIR} /opt/spark/logs && \
   pip install --no-cache-dir notebook==7.3.3 && \
   echo '#! /bin/sh' >> /bin/notebook && \
   echo 'export PYSPARK_DRIVER_PYTHON=jupyter-notebook' >> /bin/notebook && \

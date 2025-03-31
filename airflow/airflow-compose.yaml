@@ -96,6 +96,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:?}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:?}/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+      breweries-net:
   deploy:
       resources:
         limits:
@@ -119,8 +121,7 @@ services:
     <<: *airflow-common
     command: scheduler
     container_name: airflow-scheduler
-    networks:
-      - breweries-net
+
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -137,8 +138,7 @@ services:
     <<: *airflow-common
     entrypoint: /bin/bash
     container_name: airflow-init
-    networks:
-      - breweries-net
+
     # yamllint disable rule:line-length
     command:
       - -c
@@ -204,8 +204,7 @@ services:
     <<: *airflow-common
     command: webserver
     container_name: airflow-webserver
-    networks:
-      - breweries-net
+
     ports:
       - "8000:8080"
     healthcheck:
@@ -224,8 +223,7 @@ services:
     <<: *airflow-common
     command: celery worker
     container_name: airflow-worker
-    networks:
-      - breweries-net
+
     healthcheck:
       # yamllint disable rule:line-length
       test:
@@ -250,8 +248,7 @@ services:
     <<: *airflow-common
     command: triggerer
     container_name: airflow-triggerer
-    networks:
-      - breweries-net
+
     healthcheck:
       test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
       interval: 30s

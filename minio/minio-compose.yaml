@@ -7,7 +7,11 @@ services:
     image: docker.io/minio/minio:RELEASE.2025-03-12T18-04-18Z
     container_name: minio
     networks:
-      - breweries-net
+      breweries-net:
+         aliases:
+           - ${SPARK_WAREHOUSE_BUCKET:?}.minio
+           - ${MINIO_BREWERIES_BUCKET:?}.minio
+
     volumes:
       - minio-data:/data
     ports:

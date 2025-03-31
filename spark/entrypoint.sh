@@ -55,6 +55,7 @@ spark.openlineage.transport.url=${_MARQUEZ_API_ENDPOINT}
 spark.openlineage.transport.type=http
 spark.openlineage.namespace=spark-namespace
 spark.openlineage.transport.endpoint=/api/v1/lineage
+spark.openlineage.columnLineage.datasetLineageEnabled=true
 EOF
 fi
 
