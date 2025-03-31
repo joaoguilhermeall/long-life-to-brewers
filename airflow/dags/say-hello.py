@@ -36,4 +36,4 @@ with DAG(
     )
 
     # Set task dependencies
-    task1 >> task2 >> task3
+    task1 >> task2 >> task3 # type: ignore[operator]
